@@ -1,0 +1,70 @@
+--	MUX1 ----
+library	IEEE;	
+use	IEEE.Std_Logic_1164.all;	
+entity	MUX1	is	
+port	(R_OUT:	in	std_logic_vector(3	downto	0);	---- SAIDA REGISTRADOR
+		tc:	in	std_logic_vector(3	downto	0);		---- SAIDA CONTADOR DE TEMPO
+		E2:	in	std_logic_vector(1	downto	0);	 ----- SAIDA CONTROLE
+		M:	out	std_logic_vector(3	downto	0));	----- SAIDA MUX
+end	MUX1;	
+architecture MUX1_bhv of MUX1 is	
+begin		
+		M<=	R_OUT when E2 = '1'	else tc;	
+end	MUX1_bhv;
+
+-----DECODER 4 ------
+
+library	IEEE;	
+use	IEEE.Std_Logic_1164.all;	
+entity	DEC4	is	
+port (  M:	in	std_logic_vector(3	downto	0);	---- SAIDA MUX
+		D:	out	std_logic_vector(6	downto	0)	---- SAIDA DECODER
+		);	
+end	DEC4;	
+architecture DEC4_bhv	of DEC4 is	
+begin		
+	D<="0000001" when M = "0000" else -- "0" 
+     "1001111" when M = "0001" else -- "1" 
+     "0010010" when M = "0010" else -- "2" 
+     "0000110" when M = "0011" else -- "3" 
+     "1001100" when M = "0100" else -- "4" 
+     "0100100" when M = "0101" else -- "5" 
+     "0100000" when M = "0110" else -- "6" 
+     "0001111" when M = "0111" else -- "7" 
+    "0000000"  when M = "1000" else -- "8"     
+    "0000100"  when M = "1001"; -- "9" 	
+
+end	DEC4_bhv;
+
+
+---------- topo ---------
+entity	topo	is	
+	port	( HEX4:	out	std_logic_vector(6	downto	0));
+end	topo;
+
+architecture	topo_bhv	of	topo	is	
+	signal	tc, E2, R_OUT:	std_logic_vector(3	downto	0);	---- DECLARACAO DE ENTRADAS MUX 4 BIT
+	signal	M:	std_logic_vector(3	downto	0);	---- DECLARACAO SAIDA MUX 4 BIT
+	signal	saida:	std_logic_vector(6	downto	0); ---- DECLARACAO DE SAIDAS 7 BITS
+
+
+component M1
+ port (R_OUT : in std_logic_vector(3 downto 0); ---- SAIDA REGISTRADOR
+ tc : in std_logic_vector(3 downto 0); ---- SAIDA CONTADOR DE TEMPO
+ E2 : in std_logic_vector(1 downto 0); ----- SAIDA CONTROLE
+ M : out std_logic_vector(3 downto 0) ----- SAIDA MUX
+ );
+ end component; 	
+
+component D2	
+port (tc:	in	std_logic_vector(3	downto	0);		---- SAIDA MUX
+	D:	out	std_logic_vector(6	downto	0) ---- SAIDA DECODER
+	);	
+end	component;	
+
+begin	
+ 	L1: MUX1 port map (R_OUT, tc,  E2, M);
+ 	U2:	DEC4	port	map	(tc, saida);		
+	HEX4 <=	saida;	
+
+ end topo_bhv;
